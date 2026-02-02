@@ -1,0 +1,78 @@
+{
+  "name": "@openclaw/lark",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Lark (International) channel plugin for OpenClaw / Clawdbot - Webhook mode",
+  "author": "OpenClaw Contributors",
+  "license": "MIT",
+  "homepage": "https://github.com/abca12a/lark-openclaw",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abca12a/lark-openclaw.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abca12a/lark-openclaw/issues"
+  },
+  "keywords": [
+    "clawdbot",
+    "openclaw",
+    "lark",
+    "larksuite",
+    "chatbot",
+    "ai-agent",
+    "messaging",
+    "channel-plugin",
+    "webhook"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./openclaw": {
+      "import": "./dist/index.openclaw.js",
+      "types": "./dist/index.openclaw.d.ts"
+    },
+    "./clawdbot": {
+      "import": "./dist/index.clawdbot.js",
+      "types": "./dist/index.clawdbot.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "clawdbot.plugin.json",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "clawdbot": ">=2026.1.20",
+    "openclaw": ">=2026.1.29"
+  },
+  "peerDependenciesMeta": {
+    "clawdbot": {
+      "optional": true
+    },
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.56.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
