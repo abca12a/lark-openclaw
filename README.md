@@ -45,6 +45,12 @@ Unlike Feishu which supports WebSocket long-connection, **Lark only supports HTT
 
 ## Installation
 
+### npm
+
+```bash
+npm install lark-openclaw
+```
+
 ### OpenClaw
 
 ```bash
@@ -167,6 +173,12 @@ Lark（国际版飞书）渠道插件，适用于 OpenClaw / Clawdbot — **仅�
 ---
 
 ## 安装
+
+### npm
+
+```bash
+npm install lark-openclaw
+```
 
 ### OpenClaw
 
