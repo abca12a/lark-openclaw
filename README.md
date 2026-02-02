@@ -1,6 +1,6 @@
 # lark-openclaw
 
-[![npm version](https://img.shields.io/npm/v/@openclaw/lark.svg)](https://www.npmjs.com/package/@openclaw/lark)
+[![npm version](https://img.shields.io/npm/v/lark-openclaw.svg)](https://www.npmjs.com/package/lark-openclaw)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **English** | [中文](#中文文档)
@@ -48,13 +48,13 @@ Unlike Feishu which supports WebSocket long-connection, **Lark only supports HTT
 ### OpenClaw
 
 ```bash
-openclaw plugins install @openclaw/lark
+openclaw plugins install lark-openclaw
 ```
 
 ### Clawdbot
 
 ```bash
-clawdbot plugins install @openclaw/lark
+clawdbot plugins install lark-openclaw
 ```
 
 ---
@@ -111,7 +111,7 @@ Expected output:
 
 ## Links
 
-- 📦 [npm: @openclaw/lark](https://www.npmjs.com/package/@openclaw/lark)
+- 📦 [npm: lark-openclaw](https://www.npmjs.com/package/lark-openclaw)
 - 🔗 [GitHub: lark-openclaw](https://github.com/abca12a/lark-openclaw)
 - 📖 [Lark Open Platform](https://open.larksuite.com)
 - 📖 [OpenClaw Docs](https://docs.openclaw.ai)
@@ -171,13 +171,13 @@ Lark（国际版飞书）渠道插件，适用于 OpenClaw / Clawdbot — **仅�
 ### OpenClaw
 
 ```bash
-openclaw plugins install @openclaw/lark
+openclaw plugins install lark-openclaw
 ```
 
 ### Clawdbot
 
 ```bash
-clawdbot plugins install @openclaw/lark
+clawdbot plugins install lark-openclaw
 ```
 
 ---
@@ -234,7 +234,7 @@ openclaw status
 
 ## 相关链接
 
-- 📦 [npm: @openclaw/lark](https://www.npmjs.com/package/@openclaw/lark)
+- 📦 [npm: lark-openclaw](https://www.npmjs.com/package/lark-openclaw)
 - 🔗 [GitHub: lark-openclaw](https://github.com/abca12a/lark-openclaw)
 - 📖 [Lark 开放平台](https://open.larksuite.com)
 - 📖 [OpenClaw 文档](https://docs.openclaw.ai)

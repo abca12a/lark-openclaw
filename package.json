@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw/lark",
+  "name": "lark-openclaw",
   "version": "0.1.0",
   "type": "module",
   "description": "Lark (International) channel plugin for OpenClaw / Clawdbot - Webhook mode",
