@@ -1,5 +1,5 @@
 {
-  "name": "lark-openclaw",
+  "name": "lark",
   "version": "0.1.0",
   "type": "module",
   "description": "Lark (International) channel plugin for OpenClaw / Clawdbot - Webhook mode",
@@ -47,6 +47,52 @@
     "README.md",
     "LICENSE"
   ],
+  "clawdbot": {
+    "extensions": [
+      "./dist/index.clawdbot.js"
+    ],
+    "channel": {
+      "id": "lark",
+      "label": "Lark",
+      "selectionLabel": "Lark (International)",
+      "docsPath": "/channels/lark",
+      "docsLabel": "lark",
+      "blurb": "Lark international messaging platform with Webhook API.",
+      "aliases": [
+        "larksuite"
+      ],
+      "order": 86,
+      "quickstartAllowFrom": true
+    },
+    "install": {
+      "npmSpec": "lark-openclaw",
+      "localPath": "extensions/lark",
+      "defaultChoice": "npm"
+    }
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.openclaw.js"
+    ],
+    "channel": {
+      "id": "lark",
+      "label": "Lark",
+      "selectionLabel": "Lark (International)",
+      "docsPath": "/channels/lark",
+      "docsLabel": "lark",
+      "blurb": "Lark international messaging platform with Webhook API.",
+      "aliases": [
+        "larksuite"
+      ],
+      "order": 86,
+      "quickstartAllowFrom": true
+    },
+    "install": {
+      "npmSpec": "lark-openclaw",
+      "localPath": "extensions/lark",
+      "defaultChoice": "npm"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -70,7 +116,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0"
+    "openclaw": "^2026.2.1",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20.0.0"

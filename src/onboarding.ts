@@ -2,7 +2,7 @@
  * Lark onboarding wizard adapter.
  */
 
-import { DEFAULT_ACCOUNT_ID } from "./sdk.js";
+import { DEFAULT_ACCOUNT_ID } from "openclaw/plugin-sdk";
 import { listLarkAccountIds, resolveLarkAccount } from "./accounts.js";
 import type { LarkConfig } from "./types.js";
 

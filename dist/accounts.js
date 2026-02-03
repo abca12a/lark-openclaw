@@ -1,7 +1,7 @@
 /**
  * Lark account resolution — multi-account support.
  */
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "./sdk.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
 function listConfiguredAccountIds(cfg) {
     const accounts = cfg.channels?.lark?.accounts;
     if (!accounts || typeof accounts !== "object")

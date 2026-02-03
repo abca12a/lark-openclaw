@@ -8,8 +8,10 @@
 import * as Lark from "@larksuiteoapi/node-sdk";
 import { isDuplicate, isEventDuplicate } from "./dedup.js";
 import { shouldRespondInGroup } from "./group-filter.js";
-import { sendTextMessage, updateMessage, deleteMessage, sendMediaMessage } from "./send.js";
+import { sendTextMessage } from "./send.js";
 import type { ResolvedLarkAccount, LarkConfig } from "./types.js";
+
+import type { PluginRuntime } from "openclaw/plugin-sdk";
 
 /** Provider options */
 type LarkProviderOptions = {
@@ -32,16 +34,13 @@ type MessageHandlerContext = {
 };
 
 // Runtime storage for channel integration
-let larkRuntime: {
-  channel?: { reply?: { dispatchReplyWithBufferedBlockDispatcher?: unknown } };
-  config?: { loadConfig?: () => unknown };
-} | null = null;
+let larkRuntime: PluginRuntime | null = null;
 
-export function setLarkRuntime(runtime: typeof larkRuntime): void {
+export function setLarkRuntime(runtime: PluginRuntime | null): void {
   larkRuntime = runtime;
 }
 
-export function getLarkRuntime(): typeof larkRuntime {
+export function getLarkRuntime(): PluginRuntime | null {
   return larkRuntime;
 }
 
@@ -98,16 +97,46 @@ async function handleIncomingMessage(
   }
 
   ctx.statusSink?.({ lastInboundAt: Date.now() });
-  const sessionKey = `lark:${chatType === "p2p" ? senderId : chatId}`;
   ctx.log.info(`[lark:${ctx.account.accountId}] Received: ${text.slice(0, 80)}`);
 
-  // Simple echo response for now
-  // TODO: Integrate with OpenClaw runtime
-  try {
-    await sendTextMessage(ctx.client, chatId, `Echo: ${text}`);
-    ctx.statusSink?.({ lastOutboundAt: Date.now() });
-  } catch (err) {
-    ctx.log.error(`[lark] Send error: ${err}`);
+  // Dispatch to OpenClaw runtime if available
+  const runtime = getLarkRuntime();
+  if (runtime?.channel?.reply?.dispatchReplyWithBufferedBlockDispatcher) {
+    try {
+      // Build a minimal MsgContext for the runtime
+      const msgCtx = {
+        channel: "lark" as const,
+        accountId: ctx.account.accountId,
+        chatId,
+        chatType: (chatType === "p2p" ? "direct" : "group") as "direct" | "group",
+        senderId,
+        text,
+        messageId,
+        timestamp: Date.now(),
+      };
+
+      // Get config from runtime
+      const cfg = runtime.config?.loadConfig?.() ?? ctx.config;
+
+      await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
+        ctx: msgCtx as any,
+        cfg: cfg as any,
+        dispatcherOptions: {
+          thinkingThresholdMs: ctx.thinkingThresholdMs,
+        } as any,
+      });
+      ctx.statusSink?.({ lastOutboundAt: Date.now() });
+    } catch (err) {
+      ctx.log.error(`[lark] Dispatch error: ${err}`);
+    }
+  } else {
+    // Fallback: echo response (for testing without full runtime)
+    try {
+      await sendTextMessage(ctx.client, chatId, `Echo: ${text}`);
+      ctx.statusSink?.({ lastOutboundAt: Date.now() });
+    } catch (err) {
+      ctx.log.error(`[lark] Send error: ${err}`);
+    }
   }
 }
 

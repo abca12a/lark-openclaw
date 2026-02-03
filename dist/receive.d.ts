@@ -5,6 +5,7 @@
  * Uses Lark international domain: open.larksuite.com
  */
 import type { ResolvedLarkAccount, LarkConfig } from "./types.js";
+import type { PluginRuntime } from "openclaw/plugin-sdk";
 /** Provider options */
 type LarkProviderOptions = {
     account: ResolvedLarkAccount;
@@ -20,18 +21,8 @@ type LarkProviderOptions = {
     abortSignal?: AbortSignal;
     statusSink?: (patch: Record<string, unknown>) => void;
 };
-declare let larkRuntime: {
-    channel?: {
-        reply?: {
-            dispatchReplyWithBufferedBlockDispatcher?: unknown;
-        };
-    };
-    config?: {
-        loadConfig?: () => unknown;
-    };
-} | null;
-export declare function setLarkRuntime(runtime: typeof larkRuntime): void;
-export declare function getLarkRuntime(): typeof larkRuntime;
+export declare function setLarkRuntime(runtime: PluginRuntime | null): void;
+export declare function getLarkRuntime(): PluginRuntime | null;
 /** HTTP request/response types */
 type HttpRequest = {
     url?: string;

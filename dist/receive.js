@@ -51,16 +51,46 @@ async function handleIncomingMessage(data, ctx) {
             return;
     }
     ctx.statusSink?.({ lastInboundAt: Date.now() });
-    const sessionKey = `lark:${chatType === "p2p" ? senderId : chatId}`;
     ctx.log.info(`[lark:${ctx.account.accountId}] Received: ${text.slice(0, 80)}`);
-    // Simple echo response for now
-    // TODO: Integrate with OpenClaw runtime
-    try {
-        await sendTextMessage(ctx.client, chatId, `Echo: ${text}`);
-        ctx.statusSink?.({ lastOutboundAt: Date.now() });
+    // Dispatch to OpenClaw runtime if available
+    const runtime = getLarkRuntime();
+    if (runtime?.channel?.reply?.dispatchReplyWithBufferedBlockDispatcher) {
+        try {
+            // Build a minimal MsgContext for the runtime
+            const msgCtx = {
+                channel: "lark",
+                accountId: ctx.account.accountId,
+                chatId,
+                chatType: (chatType === "p2p" ? "direct" : "group"),
+                senderId,
+                text,
+                messageId,
+                timestamp: Date.now(),
+            };
+            // Get config from runtime
+            const cfg = runtime.config?.loadConfig?.() ?? ctx.config;
+            await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
+                ctx: msgCtx,
+                cfg: cfg,
+                dispatcherOptions: {
+                    thinkingThresholdMs: ctx.thinkingThresholdMs,
+                },
+            });
+            ctx.statusSink?.({ lastOutboundAt: Date.now() });
+        }
+        catch (err) {
+            ctx.log.error(`[lark] Dispatch error: ${err}`);
+        }
     }
-    catch (err) {
-        ctx.log.error(`[lark] Send error: ${err}`);
+    else {
+        // Fallback: echo response (for testing without full runtime)
+        try {
+            await sendTextMessage(ctx.client, chatId, `Echo: ${text}`);
+            ctx.statusSink?.({ lastOutboundAt: Date.now() });
+        }
+        catch (err) {
+            ctx.log.error(`[lark] Send error: ${err}`);
+        }
     }
 }
 /**

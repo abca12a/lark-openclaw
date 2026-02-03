@@ -1,6 +1,15 @@
 {
   "id": "lark",
-  "version": "0.1.0",
   "name": "Lark",
-  "description": "Lark (International) channel plugin - Webhook mode"
+  "description": "Lark (International) channel plugin — Webhook mode",
+  "version": "0.1.0",
+  "main": "dist/index.openclaw.js",
+  "channels": [
+    "lark"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
 }
