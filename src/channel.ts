@@ -12,7 +12,9 @@ import {
   formatPairingApproveHint,
   migrateBaseNameToDefaultAccount,
   normalizeAccountId,
+  normalizePluginHttpPath,
   PAIRING_APPROVED_MESSAGE,
+  registerPluginHttpRoute,
   setAccountEnabledInConfigSection,
 } from "openclaw/plugin-sdk";
 import { listLarkAccountIds, resolveDefaultLarkAccountId, resolveLarkAccount } from "./accounts.js";
@@ -453,6 +455,7 @@ export const larkPlugin = {
       setStatus: (patch: Record<string, unknown>) => void;
     }) => {
       const account = ctx.account;
+      const resolvedAccountId = ctx.accountId;
       let larkBotLabel = "";
       try {
         const probe = await probeLark(account.appId, account.appSecret, 3000);
@@ -472,9 +475,30 @@ export const larkPlugin = {
           error: (msg) => ctx.log?.error(msg),
         },
         abortSignal: ctx.abortSignal,
-        statusSink: (patch) => ctx.setStatus({ accountId: ctx.accountId, ...patch }),
+        statusSink: (patch) => ctx.setStatus({ accountId: resolvedAccountId, ...patch }),
       });
-      return provider;
+
+      // Register HTTP webhook route so gateway routes requests to us
+      const webhookPath = account.config.webhookPath || "/lark/webhook";
+      const normalizedPath = normalizePluginHttpPath(webhookPath, "/lark/webhook") ?? "/lark/webhook";
+      const unregisterHttp = registerPluginHttpRoute({
+        path: normalizedPath,
+        pluginId: "lark",
+        accountId: resolvedAccountId,
+        log: (msg) => ctx.log?.info(msg),
+        handler: provider.httpHandler as any,
+      });
+
+      ctx.log?.info(`[lark:${resolvedAccountId}] Webhook registered at ${normalizedPath}`);
+
+      // Return a combined provider with both stop functions
+      return {
+        ...provider,
+        stop: () => {
+          unregisterHttp();
+          provider.stop();
+        },
+      };
     },
   },
 };
