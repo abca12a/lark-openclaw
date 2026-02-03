@@ -50,6 +50,39 @@ if (eventData.type === "url_verification") {
 }
 ```
 
+### Lark Message Types - Handle Rich Text (post)
+
+**Critical:** Lark has multiple message types. Don't only handle `text` messages - you MUST also handle `post` (rich text) messages which contain links, formatting, and @mentions:
+
+```typescript
+// WRONG - will silently ignore rich text messages:
+if (message.message_type !== "text") return;
+
+// CORRECT - handle both text and post:
+if (messageType !== "text" && messageType !== "post") {
+  log.info(`Skipping unsupported message type: ${messageType}`);
+  return;
+}
+
+if (messageType === "text") {
+  text = parsed.text;
+} else if (messageType === "post") {
+  text = extractTextFromPost(parsed);  // Extract plain text from rich content
+}
+```
+
+Post content structure:
+```json
+{
+  "zh_cn": {
+    "content": [
+      [{"tag": "text", "text": "Hello "}, {"tag": "a", "text": "link", "href": "https://..."}],
+      [{"tag": "at", "user_id": "xxx", "user_name": "John"}]
+    ]
+  }
+}
+```
+
 ### Lark SDK Usage
 
 - Use `@larksuiteoapi/node-sdk` for Lark API interactions

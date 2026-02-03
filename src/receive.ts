@@ -59,6 +59,58 @@ type LarkMessageEvent = {
   };
 };
 
+/**
+ * Extract plain text from Lark post (rich text) content.
+ * Post content structure: { "zh_cn": { "content": [[{tag, text}, ...], ...] } }
+ */
+function extractTextFromPost(content: unknown): string {
+  if (!content || typeof content !== "object") return "";
+  const obj = content as Record<string, unknown>;
+
+  // Try different locales
+  const locales = ["zh_cn", "en_us", "ja_jp", "zh_hk", "zh_tw"];
+  let postContent: unknown = null;
+
+  for (const locale of locales) {
+    if (obj[locale] && typeof obj[locale] === "object") {
+      postContent = (obj[locale] as Record<string, unknown>).content;
+      break;
+    }
+  }
+
+  // Also check direct content field
+  if (!postContent && obj.content) {
+    postContent = obj.content;
+  }
+
+  if (!Array.isArray(postContent)) return "";
+
+  const textParts: string[] = [];
+  for (const paragraph of postContent) {
+    if (!Array.isArray(paragraph)) continue;
+    for (const element of paragraph) {
+      if (!element || typeof element !== "object") continue;
+      const el = element as Record<string, unknown>;
+      // Extract text from various element types
+      if (el.tag === "text" && typeof el.text === "string") {
+        textParts.push(el.text);
+      } else if (el.tag === "a" && typeof el.text === "string") {
+        // Link element - include text and optionally URL
+        textParts.push(el.text);
+        if (typeof el.href === "string") {
+          textParts.push(`(${el.href})`);
+        }
+      } else if (el.tag === "at" && typeof el.user_name === "string") {
+        // @mention
+        textParts.push(`@${el.user_name}`);
+      }
+    }
+    textParts.push("\n");
+  }
+
+  return textParts.join("").trim();
+}
+
 /** Handle incoming Lark message */
 async function handleIncomingMessage(
   data: LarkMessageEvent,
@@ -73,13 +125,24 @@ async function handleIncomingMessage(
   const messageId = message.message_id;
   if (messageId && isDuplicate(messageId)) return;
 
-  // Only handle text messages
-  if (message.message_type !== "text" || !message.content) return;
+  // Handle text and post (rich text) messages
+  const messageType = message.message_type;
+  if (!message.content) return;
+  if (messageType !== "text" && messageType !== "post") {
+    ctx.log.info(`[lark] Skipping unsupported message type: ${messageType}`);
+    return;
+  }
 
   let text: string;
   try {
     const parsed = JSON.parse(message.content);
-    text = (parsed.text ?? "").trim();
+    if (messageType === "text") {
+      text = (parsed.text ?? "").trim();
+    } else if (messageType === "post") {
+      text = extractTextFromPost(parsed);
+    } else {
+      return;
+    }
   } catch {
     return;
   }

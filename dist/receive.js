@@ -16,6 +16,57 @@ export function setLarkRuntime(runtime) {
 export function getLarkRuntime() {
     return larkRuntime;
 }
+/**
+ * Extract plain text from Lark post (rich text) content.
+ * Post content structure: { "zh_cn": { "content": [[{tag, text}, ...], ...] } }
+ */
+function extractTextFromPost(content) {
+    if (!content || typeof content !== "object")
+        return "";
+    const obj = content;
+    // Try different locales
+    const locales = ["zh_cn", "en_us", "ja_jp", "zh_hk", "zh_tw"];
+    let postContent = null;
+    for (const locale of locales) {
+        if (obj[locale] && typeof obj[locale] === "object") {
+            postContent = obj[locale].content;
+            break;
+        }
+    }
+    // Also check direct content field
+    if (!postContent && obj.content) {
+        postContent = obj.content;
+    }
+    if (!Array.isArray(postContent))
+        return "";
+    const textParts = [];
+    for (const paragraph of postContent) {
+        if (!Array.isArray(paragraph))
+            continue;
+        for (const element of paragraph) {
+            if (!element || typeof element !== "object")
+                continue;
+            const el = element;
+            // Extract text from various element types
+            if (el.tag === "text" && typeof el.text === "string") {
+                textParts.push(el.text);
+            }
+            else if (el.tag === "a" && typeof el.text === "string") {
+                // Link element - include text and optionally URL
+                textParts.push(el.text);
+                if (typeof el.href === "string") {
+                    textParts.push(`(${el.href})`);
+                }
+            }
+            else if (el.tag === "at" && typeof el.user_name === "string") {
+                // @mention
+                textParts.push(`@${el.user_name}`);
+            }
+        }
+        textParts.push("\n");
+    }
+    return textParts.join("").trim();
+}
 /** Handle incoming Lark message */
 async function handleIncomingMessage(data, ctx) {
     const message = data.message;
@@ -27,13 +78,26 @@ async function handleIncomingMessage(data, ctx) {
     const messageId = message.message_id;
     if (messageId && isDuplicate(messageId))
         return;
-    // Only handle text messages
-    if (message.message_type !== "text" || !message.content)
+    // Handle text and post (rich text) messages
+    const messageType = message.message_type;
+    if (!message.content)
         return;
+    if (messageType !== "text" && messageType !== "post") {
+        ctx.log.info(`[lark] Skipping unsupported message type: ${messageType}`);
+        return;
+    }
     let text;
     try {
         const parsed = JSON.parse(message.content);
-        text = (parsed.text ?? "").trim();
+        if (messageType === "text") {
+            text = (parsed.text ?? "").trim();
+        }
+        else if (messageType === "post") {
+            text = extractTextFromPost(parsed);
+        }
+        else {
+            return;
+        }
     }
     catch {
         return;
