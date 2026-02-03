@@ -207,22 +207,14 @@ export function startLarkWebhookProvider(options: LarkProviderOptions): {
         return;
       }
 
-      // URL verification challenge
-      if (body.type === "url_verification") {
-        log.info(`[lark] URL verification challenge`);
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ challenge: body.challenge }));
-        return;
-      }
-
-      // Decrypt if needed
+      // Decrypt if needed (do this FIRST, before checking type)
       let eventData = body;
       if (body.encrypt && encryptKey) {
         try {
           const cipher = new Lark.AESCipher(encryptKey);
           const decrypted = cipher.decrypt(body.encrypt as string);
           eventData = JSON.parse(decrypted);
+          log.info(`[lark] Decrypted event data`);
         } catch (err) {
           log.error(`[lark] Decrypt failed: ${err}`);
           res.statusCode = 400;
@@ -230,6 +222,15 @@ export function startLarkWebhookProvider(options: LarkProviderOptions): {
           res.end(JSON.stringify({ error: "Decrypt failed" }));
           return;
         }
+      }
+
+      // URL verification challenge (check after decryption)
+      if (eventData.type === "url_verification") {
+        log.info(`[lark] URL verification challenge`);
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ challenge: eventData.challenge }));
+        return;
       }
 
       // Check for duplicate events
